@@ -25,8 +25,9 @@ jobs:
             - name: Pack into zip and create installer
               run: npm run dist
             - name: Upload Artifacts
-              uses: actions/upload-artifact@master
+              uses: actions/upload-artifact@v4
               with:
+                  name: build-artifacts
                   path: dist
 
     publish-release:
@@ -36,14 +37,18 @@ jobs:
         steps:
             - uses: actions/checkout@v5
             - name: Download artifact
-              uses: actions/download-artifact@master
+              uses: actions/download-artifact@v4
+              with:
+                  name: build-artifacts
+            - name: List downloaded files
+              run: ls -la build-artifacts/
             - name: Get package version
               run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
             - name: Create release
               id: create_release
               uses: ncipollo/release-action@v1
               with:
-                  artifacts: "artifact/*.zip,artifact/*.exe"
+                  artifacts: "build-artifacts/*.zip,build-artifacts/*.exe"
                   generateReleaseNotes: true
                   tag: v${{ env.PACKAGE_VERSION }}
               env:
