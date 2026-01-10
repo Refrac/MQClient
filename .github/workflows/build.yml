@@ -38,9 +38,12 @@ jobs:
             - name: Download artifact
               uses: actions/download-artifact@master
             - name: Create release
+              id: create_release
               uses: ncipollo/release-action@v1
               with:
                   artifacts: "artifact/*-ia32-win.zip,artifact/*.exe"
+                  generateReleaseNotes: true
+                  tag: ${{ github.ref_name }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
