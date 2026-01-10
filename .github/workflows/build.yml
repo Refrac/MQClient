@@ -24,11 +24,13 @@ jobs:
               run: npm install
             - name: Pack into zip and create installer
               run: npm run dist
+            - name: List dist files
+              run: dir dist
             - name: Upload Artifacts
               uses: actions/upload-artifact@v4
               with:
                   name: build-artifacts
-                  path: dist
+                  path: dist/*
 
     publish-release:
         runs-on: ubuntu-latest
