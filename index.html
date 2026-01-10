@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
     <head>
         <meta charset="utf-8" />
@@ -156,7 +156,7 @@
                                 APP_VERSION_NUMBER
                             </p>
                             <p>
-                                ©2024 MQReawakened Contributors<br />©2020-2023
+                                ©2024-2026 MQReawakened Contributors<br />©2020-2024
                                 OpenFusion Contributors<br />MQReawaken is
                                 licensed under MIT.<br />
                             </p>
@@ -177,7 +177,12 @@
                                         data-bs-tooltip=""
                                         type="button"
                                         title="Github Page"
-                                        onclick="window.open(&#39;https://github.com/FeroxFoxxo/MQClient&#39;,&#39;_blank&#39;);"
+                                        onclick="
+                                            window.open(
+                                                'https://github.com/FeroxFoxxo/MQClient',
+                                                '_blank'
+                                            )
+                                        "
                                     >
                                         <i
                                             class="fab fa-github"
@@ -189,7 +194,12 @@
                                         data-bs-tooltip=""
                                         type="button"
                                         title="Discord Chat"
-                                        onclick="window.open(&#39;https://discord.gg/sA4kmsxC7N&#39;,&#39;_blank&#39;);"
+                                        onclick="
+                                            window.open(
+                                                'https://discord.gg/pJ9AwYQD7P',
+                                                '_blank'
+                                            )
+                                        "
                                     >
                                         <i
                                             class="fab fa-discord"
@@ -246,6 +256,7 @@
                                     required=""
                                     minlength="1"
                                     maxlength="70"
+                                    oninput="validateServerSave('add')"
                                 /><label for="addserver-ipinput"
                                     >Server IP</label
                                 ><input
@@ -254,7 +265,8 @@
                                     id="addserver-ipinput"
                                     placeholder="http://localhost/"
                                     required=""
-                                    pattern="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$"
+                                    pattern="^https?://([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+(:[0-9]+)?/?$"
+                                    oninput="validateServerSave('add')"
                                 />
                             </form>
                         </div>
@@ -272,7 +284,7 @@
                                 type="submit"
                                 data-dismiss="modal"
                                 form="addserver-form"
-                                onclick="addServer();"
+                                onclick="addServer()"
                             >
                                 Save
                             </button>
@@ -353,7 +365,7 @@
                                 id="addlogin-create"
                                 type="button"
                                 title="Create an Account"
-                                onclick="createAccount();"
+                                onclick="createAccount()"
                             >
                                 Create an Account
                             </button>
@@ -363,7 +375,7 @@
                                 type="submit"
                                 data-dismiss="modal"
                                 form="addlogin-form"
-                                onclick="login();"
+                                onclick="login()"
                             >
                                 Login
                             </button>
@@ -402,6 +414,7 @@
                                     required=""
                                     minlength="1"
                                     maxlength="70"
+                                    oninput="validateServerSave('edit')"
                                 /><label for="addserver-ipinput"
                                     >Server IP</label
                                 ><input
@@ -410,7 +423,8 @@
                                     id="editserver-ipinput"
                                     placeholder="http://localhost/"
                                     required=""
-                                    pattern="^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$"
+                                    pattern="^https?://([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+(:[0-9]+)?/?$"
+                                    oninput="validateServerSave('edit')"
                                 />
                             </form>
                         </div>
@@ -424,11 +438,11 @@
                                 Cancel</button
                             ><button
                                 class="btn btn-primary border rounded border-primary btn-success border-success"
-                                id="addserver-savebutton"
+                                id="editserver-savebutton"
                                 type="submit"
                                 data-dismiss="modal"
                                 form="editserver-form"
-                                onclick="editServer();"
+                                onclick="editServer()"
                             >
                                 Save
                             </button>
@@ -475,7 +489,7 @@
                                 id="deleteserver-button"
                                 type="button"
                                 data-dismiss="modal"
-                                onclick="deleteServer();"
+                                onclick="deleteServer()"
                             >
                                 Yes, Delete
                             </button>
@@ -520,7 +534,7 @@
                                 id="deleteserver-button"
                                 type="button"
                                 data-dismiss="modal"
-                                onclick="restoreDefaultServers();"
+                                onclick="restoreDefaultServers()"
                             >
                                 Yes, Restore
                             </button>
@@ -528,16 +542,141 @@
                     </div>
                 </div>
             </div>
-            <div id="of-versionnumberdiv">
-                <a
-                    id="of-versionnumber"
-                    class="text-monospace"
-                    style="color: #eee"
-                    href="#of-aboutmodal"
+            <div
+                class="modal fade"
+                role="dialog"
+                tabindex="-1"
+                id="of-editconfigmodal"
+            >
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Edit Configuration</h4>
+                            <button
+                                type="button"
+                                class="close"
+                                data-dismiss="modal"
+                                aria-label="Close"
+                            >
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form
+                                id="editconfig-form"
+                                class="needs-validation form-group"
+                            >
+                                <div class="form-check form-row">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        id="editconfig-autoupdate"
+                                    />
+                                    <label
+                                        class="form-check-label"
+                                        for="editconfig-autoupdate"
+                                        >Automatically check for updates</label
+                                    >
+                                </div>
+                                <div class="form-check form-row">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        id="editconfig-fullscreen"
+                                    />
+                                    <label
+                                        class="form-check-label"
+                                        for="editconfig-fullscreen"
+                                        >Enable fullscreen on launching game
+                                        client</label
+                                    >
+                                </div>
+                                <div class="form-row mt-3">
+                                    <label for="editconfig-reswidth"
+                                        >Resolution Width:</label
+                                    >
+                                    <input
+                                        class="form-control w-50 ml-2"
+                                        type="number"
+                                        id="editconfig-reswidth"
+                                        min="800"
+                                        max="3840"
+                                        required=""
+                                    />
+                                </div>
+                                <div class="form-row mt-3">
+                                    <label for="editconfig-resheight"
+                                        >Resolution Height:</label
+                                    >
+                                    <input
+                                        class="form-control w-50 ml-2"
+                                        type="number"
+                                        id="editconfig-resheight"
+                                        min="600"
+                                        max="2160"
+                                        required=""
+                                    />
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button
+                                class="btn btn-primary border rounded border-primary btn-danger border-danger"
+                                id="editconfig-cancel"
+                                type="button"
+                                data-dismiss="modal"
+                            >
+                                Cancel</button
+                            ><button
+                                class="btn btn-primary border rounded border-primary btn-success border-success"
+                                id="editconfig-savebutton"
+                                type="submit"
+                                data-dismiss="modal"
+                                form="editconfig-form"
+                                onclick="editConfig()"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="of-config-button-div">
+                <button
+                    class="btn btn-primary mr-1"
                     data-toggle="modal"
-                    data-target="#of-aboutmodal"
-                    >v0</a
+                    data-bs-tooltip=""
+                    data-placement="right"
+                    id="of-editconfig-button"
+                    type="button"
+                    title="Edit Configuration"
+                    data-target="#of-editconfigmodal"
                 >
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+            <div id="of-about-button-div">
+                <button
+                    class="btn btn-primary mr-1"
+                    data-toggle="modal"
+                    data-bs-tooltip=""
+                    data-placement="left"
+                    id="of-about-button"
+                    type="button"
+                    title="About MQClient"
+                    data-target="#of-aboutmodal"
+                >
+                    <i class="fas fa-info-circle"></i>
+                </button>
+            </div>
+            <div id="of-about-flash-div" style="z-index: -1">
+                <button
+                    class="btn btn-warning mr-1"
+                    tabindex="-1"
+                    type="button"
+                >
+                    <i class="fas fa-info-circle"></i>
+                </button>
             </div>
         </section>
         <section>
@@ -545,7 +684,7 @@
         </section>
         <script
             src="assets/js/jquery.min.js"
-            onload="window.$ = window.jQuery = module.exports;"
+            onload="window.$ = window.jQuery = module.exports"
         ></script>
         <script src="assets/js/bootstrap.min.js"></script>
         <script src="assets/js/bs-init.js"></script>

@@ -32,9 +32,16 @@ app.commandLine.appendSwitch("no-proxy-server");
 
 var userData = app.getPath("userData");
 var serversPath = path.join(userData, "servers.json");
+var configPath = path.join(userData, "config.json");
 
 function initialSetup() {
-    fs.copySync(path.join(__dirname, "/defaults/servers.json"), serversPath);
+    if (!fs.existsSync(configPath))
+        fs.copySync(path.join(__dirname, "/defaults/config.json"), configPath);
+    if (!fs.existsSync(serversPath))
+        fs.copySync(
+            path.join(__dirname, "/defaults/servers.json"),
+            serversPath
+        );
 
     console.log("JSON files copied.");
     showMainWindow();
@@ -74,8 +81,8 @@ app.on("ready", function () {
 
     // Check for first run
     try {
-        if (!fs.existsSync(serversPath)) {
-            console.log("Server file not found. Running initial setup.");
+        if (!fs.existsSync(serversPath) || !fs.existsSync(configPath)) {
+            console.log("Config files not found. Running initial setup.");
             initialSetup();
         } else {
             showMainWindow();
@@ -108,6 +115,7 @@ function showMainWindow() {
         if (!hasExecuted) {
             mainWindow.webContents.executeJavaScript("setAppVersionText();");
             // everything's loaded, tell the renderer process to do its thing
+            mainWindow.webContents.executeJavaScript("loadConfig();");
             mainWindow.webContents.executeJavaScript("loadServerList();");
 
             hasExecuted = true;
