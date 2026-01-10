@@ -27,7 +27,7 @@ jobs:
             - name: List dist files
               run: dir dist
             - name: Get package version
-              run: $env:PACKAGE_VERSION = & node -p "require('./package.json').version"
+              run: Add-Content $env:GITHUB_ENV "PACKAGE_VERSION=$(& node -p "require('./package.json').version")"
             - name: Create release
               id: create_release
               uses: ncipollo/release-action@v1
