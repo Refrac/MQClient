@@ -4,8 +4,10 @@ var path = remote.require("path");
 
 var userData = remote.require("app").getPath("userData");
 var serversPath = path.join(userData, "servers.json");
+var configPath = path.join(userData, "config.json");
 
 var serverArray;
+var config;
 
 function enableServerListButtons() {
     $("#of-connect-button").removeClass("disabled");
@@ -39,7 +41,70 @@ function getAppVersion() {
 
 function setAppVersionText() {
     $("#of-aboutversionnumber").text("Version " + getAppVersion());
-    $("#of-versionnumber").text("v" + getAppVersion());
+}
+
+function checkForNewAppVersion() {
+    $("#of-about-button").removeClass("pulsing");
+    setAppVersionText();
+    if (config["autoupdate-check"] === true) {
+        $.getJSON(
+            "https://api.github.com/repos/FeroxFoxxo/MQClient/releases/latest",
+            {},
+            function (data) {
+                $.each(data, function (index, element) {
+                    if (
+                        index === "tag_name" &&
+                        element != remote.require("app").getVersion()
+                    ) {
+                        console.log("New version available: " + element);
+                        var downloadPage =
+                            "https://github.com/FeroxFoxxo/MQClient/releases/latest";
+                        $("#of-aboutversionnumber").html(
+                            "Version " +
+                                getAppVersion() +
+                                `<br>A new version is available! ` +
+                                `Click <a href="#" onclick='remote.require("shell").openExternal("` +
+                                downloadPage +
+                                `");'>here</a> to download.`
+                        );
+                        $("#of-about-button").addClass("pulsing");
+                        return false; // break out of loop early
+                    }
+                });
+            }
+        );
+    }
+}
+
+function validateServerSave(modalName) {
+    // works everytime a key is entered into the server save form
+    var descInput = document.getElementById(modalName + "server-descinput");
+    var ipInput = document.getElementById(modalName + "server-ipinput");
+    var button = document.getElementById(modalName + "server-savebutton");
+    var valid = true;
+
+    descInput.classList.remove("invalidinput");
+    ipInput.classList.remove("invalidinput");
+
+    if (
+        descInput.value.length <
+            parseInt(descInput.getAttribute("minlength")) ||
+        descInput.value.length > parseInt(descInput.getAttribute("maxlength"))
+    ) {
+        descInput.classList.add("invalidinput");
+        valid = false;
+    }
+
+    if (!new RegExp(ipInput.getAttribute("pattern")).test(ipInput.value)) {
+        ipInput.classList.add("invalidinput");
+        valid = false;
+    }
+
+    if (valid) {
+        button.removeAttribute("disabled");
+    } else {
+        button.setAttribute("disabled", "");
+    }
 }
 
 function addServer() {
@@ -110,12 +175,43 @@ function restoreDefaultServers() {
     loadServerList();
 }
 
+function editConfig() {
+    var jsonToModify = JSON.parse(remotefs.readFileSync(configPath));
+
+    jsonToModify["autoupdate-check"] = $("#editconfig-autoupdate").prop(
+        "checked"
+    );
+    jsonToModify["fullscreen"] = $("#editconfig-fullscreen").prop("checked");
+    jsonToModify["resolution"]["width"] = parseInt(
+        $("#editconfig-reswidth").val()
+    );
+    jsonToModify["resolution"]["height"] = parseInt(
+        $("#editconfig-resheight").val()
+    );
+
+    remotefs.writeFileSync(configPath, JSON.stringify(jsonToModify, null, 4));
+
+    loadConfig();
+}
+
+function loadConfig() {
+    // Load config object globally
+    config = remotefs.readJsonSync(configPath);
+
+    $("#editconfig-autoupdate").prop("checked", config["autoupdate-check"]);
+    $("#editconfig-fullscreen").prop("checked", config["fullscreen"]);
+    $("#editconfig-reswidth").prop("value", config["resolution"]["width"]);
+    $("#editconfig-resheight").prop("value", config["resolution"]["height"]);
+
+    checkForNewAppVersion();
+}
+
 function loadServerList() {
     var serverJson = remotefs.readJsonSync(serversPath);
     serverArray = serverJson["servers"];
 
+    deselectServer(); // Remove selection and disable buttons until another server is selected
     $(".server-listing-entry").remove(); // Clear out old stuff, if any
-    disableServerListButtons(); // Disable buttons until another server is selected
 
     if (serverArray.length > 0) {
         // Servers were found in the JSON
@@ -340,16 +436,21 @@ $("#server-table").on("dblclick", ".server-listing-entry", function (event) {
     connectToServer();
 });
 
+$("#of-addservermodal").on("show.bs.modal", function (e) {
+    validateServerSave("add");
+});
+
 $("#of-editservermodal").on("show.bs.modal", function (e) {
-    var jsonToModify = remotefs.readJsonSync(
-        path.join(userData, "servers.json")
-    );
+    var jsonToModify = remotefs.readJsonSync(serversPath);
+
     $.each(jsonToModify["servers"], function (key, value) {
         if (value["uuid"] == getSelectedServer()) {
             $("#editserver-descinput")[0].value = value["description"];
             $("#editserver-ipinput")[0].value = value["ip"];
         }
     });
+
+    validateServerSave("edit");
 });
 
 $("#of-deleteservermodal").on("show.bs.modal", function (e) {
@@ -357,4 +458,9 @@ $("#of-deleteservermodal").on("show.bs.modal", function (e) {
         return obj.uuid === getSelectedServer();
     })[0];
     $("#deleteserver-servername").html(result.description);
+});
+
+// Keep all config values synced on modal show
+$("#of-editconfigmodal").on("show.bs.modal", function (e) {
+    loadConfig();
 });

@@ -1,5 +1,13 @@
+var remote = require("remote");
+var remotefs = remote.require("fs-extra");
+var path = remote.require("path");
+
+var userData = remote.require("app").getPath("userData");
+var configPath = path.join(userData, "config.json");
+
 var gameRunning = false;
 var query_string = "";
+var config;
 
 function onResize() {
     if (gameRunning == true) {
@@ -14,22 +22,20 @@ function GetUnity() {
     return document.getElementById("unityEmbed");
 }
 
-var MQHandler = function() {
+var MQHandler = function () {
     var mqHandler = {};
 
-    mqHandler.function = function() {
-    };
+    mqHandler.function = function () {};
 
     return mqHandler;
 };
 
 var mq = MQHandler();
 
-var Stats = function() {
+var Stats = function () {
     var stats = {};
 
-    stats.function = function() {
-    };
+    stats.function = function () {};
 
     return stats;
 };
@@ -37,6 +43,8 @@ var Stats = function() {
 var MQStats = Stats();
 
 function launchGame() {
+    config = remotefs.readJsonSync(configPath);
+
     gameRunning = true;
 
     var sel = document.getElementById("of-serverselector");
@@ -49,15 +57,13 @@ function launchGame() {
 
     var projName = revStr("tseuqyeknom");
     var cash = revStr("hsackcin");
-    
-    var fullscreen = "true";
 
-    if (process.env.npm_node_execpath) {
-        fullscreen = "false";
-    }
+    var fullscreen = config["fullscreen"] === true;
+    var width = config["resolution"]["width"];
+    var height = config["resolution"]["height"];
 
     console.log("Setting fullscreen mode to: " + fullscreen);
-    
+
     var properties = [
         { key: "login.auto", value: "true" },
 
@@ -94,8 +100,6 @@ function launchGame() {
         { key: projName + ".unity.enableclockdriftprediction", value: "true" },
         { key: projName + ".unity.networktimeout", value: "120" },
 
-        { key: projName + ".unity.screenstatus.fullscreen", value: fullscreen},
-
         { key: projName + ".unity.url." + cash, value: url + "/Cash" },
         { key: projName + ".unity.url.membership", value: url + "/Membership" },
 
@@ -128,6 +132,12 @@ function launchGame() {
         { key: "simulate.sharder", value: "true" },
     ];
 
+    if (fullscreen)
+        properties.push({
+            key: projName + ".unity.screenstatus.fullscreen",
+            value: fullscreen,
+        });
+
     for (var i = 0; i < properties.length; i++) {
         query_string += "&" + properties[i].key + "&" + properties[i].value;
     }
@@ -137,8 +147,8 @@ function launchGame() {
     var object = document.createElement("object");
 
     object.setAttribute("id", "unityObject");
-    object.setAttribute("width", "800");
-    object.setAttribute("height", "600");
+    object.setAttribute("width", width);
+    object.setAttribute("height", height);
 
     var embed = document.createElement("embed");
 
@@ -153,8 +163,8 @@ function launchGame() {
     console.log("UnityURL: " + srcPath);
 
     embed.setAttribute("id", "unityEmbed");
-    embed.setAttribute("width", "800");
-    embed.setAttribute("height", "600");
+    embed.setAttribute("width", width);
+    embed.setAttribute("height", height);
     embed.setAttribute("src", srcPath);
     embed.setAttribute("bordercolor", "000000");
     embed.setAttribute("backgroundcolor", "000000");
@@ -172,6 +182,8 @@ function launchGame() {
     div.appendChild(object);
 
     document.title = "MQClient";
+
+    window.resizeTo(width, height);
 
     onResize();
 }

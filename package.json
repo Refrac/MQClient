@@ -1,13 +1,13 @@
 {
     "name": "MqClient",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "description": "MqClient Electron App",
     "main": "index.js",
     "scripts": {
         "postinstall": "npx patch-package && npm explore electron-prebuilt -- npm run postinstall",
         "start": "electron .",
         "pack": "electron-builder --win --ia32 --dir",
-        "dist": "electron-builder --win --ia32",
+        "dist": "electron-builder --win --ia32 --publish=never",
         "prettier": "npx prettier --write ."
     },
     "author": "MQReawakened Contributors",
@@ -15,8 +15,8 @@
     "devDependencies": {
         "electron-builder": "^22.14.13",
         "electron-prebuilt": "^0.31.2",
-        "patch-package": "^6.5.1",
-        "prettier": "^2.7.1"
+        "patch-package": "^7.0.2",
+        "prettier": "^3.3.3"
     },
     "repository": {
         "type": "git",
@@ -25,7 +25,7 @@
     "build": {
         "appId": "ovh.reawaken.client",
         "productName": "MqClient",
-        "copyright": "© 2024 MQReawakened Contributors",
+        "copyright": "© 2024-2026 MQReawakened Contributors",
         "electronDownload": {
             "version": "0.31.2",
             "platform": "win32",

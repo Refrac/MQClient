@@ -1,0 +1,40 @@
+name: Publish Build
+
+on:
+    push:
+        branches: ["main"]
+
+permissions:
+    contents: write
+
+jobs:
+    build-and-publish:
+        runs-on: windows-2022
+
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  fetch-depth: 0
+            - name: Set up Node.js 24.x
+              uses: actions/setup-node@v6
+              with:
+                  node-version: 24.x
+                  cache: "npm"
+            - name: Install dependencies
+              run: npm install
+            - name: Pack into zip and create installer
+              run: npm run dist
+            - name: List dist files
+              run: dir dist
+            - name: Get package version
+              run: Add-Content $env:GITHUB_ENV "PACKAGE_VERSION=$(& node -p "require('./package.json').version")"
+            - name: Create release
+              id: create_release
+              uses: ncipollo/release-action@v1
+              with:
+                  artifacts: "dist/*.zip,dist/*.exe"
+                  generateReleaseNotes: true
+                  tag: v${{ env.PACKAGE_VERSION }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
