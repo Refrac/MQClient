@@ -5,6 +5,8 @@ var ipc = require("ipc");
 var os = require("os");
 var path = require("path");
 
+var child_process = require("child_process");
+
 var BrowserWindow = require("browser-window");
 
 var mainWindow = null;
@@ -33,6 +35,40 @@ app.commandLine.appendSwitch("no-proxy-server");
 var userData = app.getPath("userData");
 var serversPath = path.join(userData, "servers.json");
 var configPath = path.join(userData, "config.json");
+
+function isUnityWebPlayerInstalled(cb) {
+    // Check if Unity Web Player is installed by looking for a key file in the install directory
+    var unityPlayerPath = path.join(
+        unityHomeDir,
+        "player",
+        "3.x.x",
+        "webplayer_win.dll"
+    );
+    var installed = fs.existsSync(unityPlayerPath);
+    cb(installed);
+}
+
+function installWebPlayer(executablePath, args) {
+    isUnityWebPlayerInstalled(function (installed) {
+        if (installed) {
+            console.log(
+                "Unity Web Player is already installed, skipping install."
+            );
+            if (cb) cb(null);
+            return;
+        }
+        if (!args) args = [];
+        var appProcess = child_process.spawn(executablePath, args, {
+            detached: true,
+            stdio: "ignore",
+        });
+        appProcess.on("error", function (err) {
+            console.error("Failed to install webplayer:", err);
+        });
+        appProcess.unref();
+        console.log("Installed webplayer!");
+    });
+}
 
 function initialSetup() {
     if (!fs.existsSync(configPath))
@@ -66,6 +102,11 @@ app.on("ready", function () {
         dialog.showErrorBox("Error!", errorMessage);
         return;
     }
+
+    var appPath = path.join(unityHomeDir, "UnityWebPlayerDevelopment.exe");
+
+    installWebPlayer(appPath, ["/S"]);
+
     // Create the browser window.
     mainWindow = new BrowserWindow({
         width: 800,

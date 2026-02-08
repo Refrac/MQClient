@@ -22,6 +22,10 @@ jobs:
                   cache: "npm"
             - name: Install dependencies
               run: npm install
+            - name: Download Unity Web Player
+              run: |
+                  mkdir -p build/WebPlayer
+                  Invoke-WebRequest -Uri "https://dn721802.ca.archive.org/0/items/unity-web-player-archive/3.5.7/UnityWebPlayerDevelopment.exe" -OutFile "build/WebPlayer/UnityWebPlayerDevelopment.exe"
             - name: Pack into zip and create installer
               run: npm run dist
             - name: List dist files
@@ -34,7 +38,7 @@ jobs:
               with:
                   artifacts: "dist/*.zip,dist/*.exe"
                   generateReleaseNotes: true
-                  tag: v${{ env.PACKAGE_VERSION }}
+                  tag: ${{ env.PACKAGE_VERSION }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
