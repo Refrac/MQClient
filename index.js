@@ -105,6 +105,7 @@ app.on("ready", function () {
 
     var appPath = path.join(unityHomeDir, "UnityWebPlayerDevelopment.exe");
 
+    // Check if the unity web player needs to be installed
     installWebPlayer(appPath, ["/S"]);
 
     // Create the browser window.
