@@ -1,6 +1,6 @@
 {
     "name": "MqClient",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "MqClient Electron App",
     "main": "index.js",
     "scripts": {
